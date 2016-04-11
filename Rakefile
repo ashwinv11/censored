@@ -5,7 +5,7 @@ require File.expand_path('../config/application', __FILE__)
 
 Rails.application.load_tasks
 
-db = "itsyourfault_#{Rails.env}"
+db = "censored_#{Rails.env}"
 
 # task :default => 'app:import_data'
 # rake db:mongoid:create_indexes / rake db:setup

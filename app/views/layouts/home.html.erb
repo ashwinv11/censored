@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- India State Map  -->
+    <title>India Map</title>
+
+    <!--  Scripts  -->
+    <%= javascript_include_tag "d3.min" %>
+    <%= javascript_include_tag "d3.geo.min" %>
+    <%= csrf_meta_tags %>
+
+    <!--  Styles  -->  
+    <%= stylesheet_link_tag "zcolorbrewer" %>
+    <style type="text/css">
+    svg {
+      background: #eee;
+      }
+      
+    #india {
+      fill: #008000;
+      opacity: .8;
+      stroke: #000000;
+      stroke-width: .7;
+      }
+    </style>
+</head>
+<body>
+
+<%= yield %>
+
+</body>
+</html>

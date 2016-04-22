@@ -10,7 +10,7 @@ var map = d3.select("#chart").append("svg:svg")
     .attr("height", h)
         //.call(d3.behavior.zoom().on("zoom", redraw))
     .call(initialize);
-
+/*
 var calculate_centroid_polygon = function(polygon) {
   var this_centroid_lon = null;
   var this_centroid_lat = null;
@@ -101,6 +101,7 @@ var closest_state = function(x, y) {
   console.log(closest_state, closest_dist);
   return closest_state;
 };
+*/
 
 var india = map.append("svg:g")
     .attr("id", "india");
@@ -109,7 +110,7 @@ d3.json('/states.json', function (json) {
       .data(json.features)
       .enter().append("path")
       .attr("d", path)
-      .on("mouseover", function(d) {
+      .on("mousedown", function(d) {
         console.log(d.id);
       })
 });
@@ -137,6 +138,7 @@ function redraw() {
   india.selectAll("path").attr("d", path);
 }
 */
+
 var container = document.getElementById('chart');
 var i = 0;
 var xPosition = [];
@@ -154,8 +156,9 @@ container.onclick = function (e) {
             .attr("y1", yPosition[i - 1])
             .attr("x2", xPosition[i])
             .attr("y2", yPosition[i])
-            .attr("stroke-width", 2)
-            .attr("stroke", "white");
+            .attr("stroke-width", 1)
+            .attr("stroke", "white")
+            .attr("opacity", ".6");
     }
     i++;
 };

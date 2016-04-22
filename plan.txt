@@ -16,3 +16,10 @@ for each district_id in centroids:
 for each district_id in district_to_check:
   is lat,lon in shapes[district_id]?
     done
+
+
+For mouse outside map:
+  check if mouse pos is inside the map, 
+    if not don't let click
+    else
+      

@@ -1,0 +1,10 @@
+svg {
+  background: black;
+}
+
+#india {
+  fill: #008000;
+  opacity: .8;
+  stroke: #000000;
+  stroke-width: .7;
+}

@@ -14,3 +14,9 @@ svg {
   stroke: #000000;
   stroke-width: .7;
 }
+
+#railways {
+  fill: green; //#008000
+  stroke: green;
+  stroke-width: 4;
+}

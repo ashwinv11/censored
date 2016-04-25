@@ -4,7 +4,8 @@ var proj = d3.geo.mercator();
 var path = d3.geo.path().projection(proj);
 var t = proj.translate(); // the projection's default translation
 var s = proj.scale() // the projection's default scale
-var mouseXY = []
+var circles = [];
+var centered;
 
 var map = d3.select("#chart").append("svg:svg")
     .attr("width", w)
@@ -27,9 +28,6 @@ var layer2 = map.append('g')
 var lines = layer2.append("svg")
     .attr("width", w)
     .attr("height", h);
-
-var circles = [];
-var colors = [];
 
 function drawMap() {    
   d3.json('/india_district.geojson', function (json) {
@@ -78,54 +76,37 @@ function drawMap() {
                 .attr("cy",function(d,i){return circles[i][1];})
                 .attr("r",2)
                 .style("fill", "white");
+
+          var x, y, k;
+
+          if (d && centered !== d) {
+            var centroid = path.centroid(d);
+            x = centroid[0];
+            y = centroid[1];
+            k = 4;
+            centered = d;
+          } else {
+            x = w / 2;
+            y = h / 2;
+            k = 1;
+            centered = null;
+          }
+
+          india.selectAll("path")
+              .classed("active", centered && function(d) { return d === centered; });
+
+          india.transition()
+              .duration(750)
+              .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+              .style("stroke-width", 1.5 / k + "px");
+
+          layer2.selectAll("path")
+              .classed("active", centered && function(d) { return d === centered; });
+
+          layer2.transition()
+              .duration(750)
+              .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+              .style("stroke-width", 1.5 / k + "px");
           })
   });
 }
-
-// This section should allow for zoom & pan.
-/*
-function redraw() {
-  // d3.event.translate stores the current translation from the parent SVG element
-  // t stores the projection's default translation
-  // adding the x and y vales in each array to yields the projection's new translation
-  var tx = t[0] * d3.event.scale + d3.event.translate[0];
-  var ty = t[1] * d3.event.scale + d3.event.translate[1];
-  proj.translate([tx, ty]);
-
-  // determine the projection's new scale and redraw the map:
-  proj.scale(s * d3.event.scale); 
-  india.selectAll("path").attr("d", path);
-}
-*/
-
-/*
-
-var container = document.getElementById('chart');
-var i = 0;
-
-container.onclick = function (e) {
-    xPosition[i] = e.clientX;
-    yPosition[i] = e.clientY;
-    if (i >= 1) {
-        var line = lines.append("line")
-            .attr("x1", xPosition[i - 1])
-            .attr("y1", yPosition[i - 1])
-            .attr("x2", xPosition[i])
-            .attr("y2", yPosition[i])
-            .attr("transform", null)
-            .transition()
-            .ease("linear")
-            .duration(2000)
-            .attr("stroke-width", 2)
-            .attr("stroke", "white")
-            .attr("opacity", ".6");
-    }
-    i++;
-};
-*/
-
-/*
-function reset(){
-  $("#lines").empty();
-}
-*/

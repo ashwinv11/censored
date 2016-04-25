@@ -1,5 +1,10 @@
 <div id="chart"></div>
 <%= javascript_include_tag "map" %>
 <div id="controls">
+  <span class="controls_text">
+    <div>State: <div id="state_name"></div></div>
+    <div>District: <div id="district_name"></div></div>
+  </span>
+  <button id="start" onclick="start()">Start</button>
   <button id="reset" onclick="reset()">Reset</button>
 </div>

@@ -1,5 +1,5 @@
 var w = 800;
-var h = 800;
+var h = 780;
 var proj = d3.geo.mercator();
 var path = d3.geo.path().projection(proj);
 var t = proj.translate(); // the projection's default translation
@@ -39,10 +39,14 @@ function drawMap() {
         .attr("stroke", "black")
         .attr("stroke-width", .4)
         .attr("stroke-opacity", .4)
-        .on("click", function(d) {
-          console.log(d.properties.NAME_2);
+        .on("mouseover", function(d){
+          document.getElementById("state_name").innerHTML = d.properties.NAME_1;
+          document.getElementById("district_name").innerHTML = d.properties.NAME_2;
+        })
 
-          // accessor function
+        .on("click", function(d) {
+          // PATH DRAWING
+
           var lineFunction = d3.svg.line()
                             .x(function(d,i) { return circles[i][0]; })
                             .y(function(d,i) { return circles[i][1]; })
@@ -63,7 +67,7 @@ function drawMap() {
                     .attr("stroke", "white")
                     .style("fill", "none")
                     .attr("opacity", ".4")
-                    .style("stroke-dasharray", ("8,4"));          
+                    .style("stroke-dasharray", ("8,4"));       
 
           linePath = lines.selectAll("circle")
                     .data(circles)
@@ -73,7 +77,10 @@ function drawMap() {
                     .attr("cy",function(d,i){return circles[i][1];})
                     .attr("r",2)
                     .attr("class", "line")
+                    .attr("class", "point")
                     .style("fill", "white");
+
+          // ZOOMING VIA TRANSLATE
 
           var x, y, k;
 
@@ -109,7 +116,60 @@ function drawMap() {
   });
 }
 
+// RESET BUTTON
+
 function reset() {
   d3.selectAll(".line").remove();
   circles = [];
+
+  // Resets the zoom
+  india.transition()
+      .duration(750)
+      .attr("transform", "translate(0,0)scale(1)");
+  layer2.transition()
+      .duration(750)
+      .attr("transform", "translate(0,0)scale(1)");
+}
+
+function start(){
+  // Reset's camera
+  india.transition()
+      .duration(750)
+      .attr("transform", "translate(0,0)scale(1)");
+  layer2.transition()
+      .duration(750)
+      .attr("transform", "translate(0,0)scale(1)");
+
+  lines.selectAll(".point")
+      .data(circles)
+    .enter().append("circle")
+      .attr("r", 4)
+      .attr("transform", function(d) { return "translate(" + d + ")"; });
+
+  var circle = lines.append("circle")
+      .attr("r", 5)
+      .attr("transform", "translate(" + circles[0] + ")")
+      .style("fill", "blue")
+      .style("opacity", .6);
+
+  var travelPath = d3.selectAll("path.line");
+  transition();
+
+  function transition() {
+    circle.transition()
+        .duration(10000)
+        .attrTween("transform", translateAlong(travelPath.node()))
+        .each("end", transition);
+  }
+
+  // Returns an attrTween for translating along the specified path element.
+  function translateAlong(path) {
+    var l = path.getTotalLength();
+    return function(d, i, a) {
+      return function(t) {
+        var p = path.getPointAtLength(t * l);
+        return "translate(" + p.x + "," + p.y + ")";
+      };
+    };
+  }
 }

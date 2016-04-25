@@ -1,4 +1,4 @@
-body{
+body {
   background: black;
 }
 
@@ -7,26 +7,20 @@ body{
   float: left;
 }
 
-#controls{
+button {
+  float: left;
+}
+
+.controls_text{
+  color: white;
+  text-align: right;
   float: right;
 }
-/*
-svg {
-  background: black;
-  display: block;
-  margin: auto;
+
+#state_name{
+  display: inline-block;
 }
-*/
-/*
-#india {
-  fill: red; //#008000
-  opacity: .2;
-  stroke: #000000;
-  stroke-width: .7;
-}
-*/
-#railways {
-  fill: green; //#008000
-  stroke: green;
-  stroke-width: 4;
+
+#district_name{
+  display: inline-block;
 }

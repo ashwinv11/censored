@@ -23,3 +23,11 @@ For mouse outside map:
     if not don't let click
     else
       
+
+
+TODO:
+  1. Sound
+  2. Connect Data to districts
+  3. Follow train
+  4. Mouse scroll zoom
+  5. d3 graphs page?

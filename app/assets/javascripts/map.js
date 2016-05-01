@@ -120,6 +120,8 @@ function drawMap() {
 
 function reset() {
   d3.selectAll(".line").remove();
+  d3.selectAll(".point").remove();
+  d3.selectAll(".train").remove();
   circles = [];
 
   // Resets the zoom
@@ -130,6 +132,11 @@ function reset() {
       .duration(750)
       .attr("transform", "translate(0,0)scale(1)");
 }
+
+var layer3 = map.append('g')
+            .attr("id", "train");
+  
+var train = layer3.append("svg");
 
 function start(){
   // Reset's camera
@@ -146,10 +153,11 @@ function start(){
       .attr("r", 4)
       .attr("transform", function(d) { return "translate(" + d + ")"; });
 
-  var circle = lines.append("circle")
+  var circle = layer3.append("circle")
       .attr("r", 5)
       .attr("transform", "translate(" + circles[0] + ")")
       .style("fill", "blue")
+      .attr("class", "train")
       .style("opacity", .6);
 
   var travelPath = d3.selectAll("path.line");
@@ -157,9 +165,9 @@ function start(){
 
   function transition() {
     circle.transition()
-        .duration(10000)
-        .attrTween("transform", translateAlong(travelPath.node()))
-        .each("end", transition);
+            .duration(15000)
+            .attrTween("transform", translateAlong(travelPath.node()))
+            .each("end", transition);
   }
 
   // Returns an attrTween for translating along the specified path element.
@@ -168,6 +176,8 @@ function start(){
     return function(d, i, a) {
       return function(t) {
         var p = path.getPointAtLength(t * l);
+        // layer2.transition()
+        //     .attr("transform", "translate(" + p.x + "," + p.y + ")scale(4,4)");
         return "translate(" + p.x + "," + p.y + ")";
       };
     };

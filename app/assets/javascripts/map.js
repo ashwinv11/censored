@@ -7,13 +7,28 @@ var s = proj.scale() // the projection's default scale
 var circles = [];
 var centered;
 var linePath;
+var travelPath;
+var trainPos;
+
+var zoom = d3.behavior.zoom()
+    .scaleExtent([1, 10])
+    .on("zoom", zoomed);
+
+var drag = d3.behavior.drag()
+    .origin(function(d) { return d; })
+    .on("dragstart", dragstarted)
+    .on("drag", dragged)
+    .on("dragend", dragended);
 
 var map = d3.select("#chart").append("svg:svg")
     .attr("width", w)
     .attr("height", h)
         //.call(d3.behavior.zoom().on("zoom", redraw))
     .call(initialize)
-    .call(drawMap);
+    .call(drawMap)
+    .append("g")
+    .attr("id", "zoomLayer")
+    .call(zoom);
 
 var india = map.append("svg:g")
     .attr("id", "india");
@@ -23,10 +38,17 @@ function initialize() {
   proj.translate([-1280, 780]);
 }
 
+var zoomLayer = d3.select("#zoomLayer");
+
 var layer2 = map.append('g')
             .attr("id", "lines");
   
 var lines = layer2.append("svg");
+
+var layer3 = map.append('g')
+            .attr("id", "train");
+  
+var train = layer3.append("svg");
 
 function drawMap() {    
   d3.json('/india_district.geojson', function (json) {
@@ -97,89 +119,88 @@ function drawMap() {
             centered = null;
           }
 
-          india.selectAll("path")
-              .classed("active", centered && function(d) { return d === centered; });
-
-          india.transition()
+          zoomLayer.transition()
               .duration(750)
               .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
               .style("stroke-width", 1.5 / k + "px");
-
-          layer2.selectAll("path")
-              .classed("active", centered && function(d) { return d === centered; });
-
-          layer2.transition()
-              .duration(750)
-              .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
-              .style("stroke-width", 1.5 / k + "px");
-          })
+    });
   });
-}
+};
 
 // RESET BUTTON
 
 function reset() {
+  travelPath = null;
   d3.selectAll(".line").remove();
   d3.selectAll(".point").remove();
   d3.selectAll(".train").remove();
   circles = [];
 
-  // Resets the zoom
-  india.transition()
-      .duration(750)
-      .attr("transform", "translate(0,0)scale(1)");
-  layer2.transition()
+  zoomLayer.transition()
       .duration(750)
       .attr("transform", "translate(0,0)scale(1)");
 }
 
-var layer3 = map.append('g')
-            .attr("id", "train");
-  
-var train = layer3.append("svg");
-
 function start(){
-  // Reset's camera
-  india.transition()
-      .duration(750)
-      .attr("transform", "translate(0,0)scale(1)");
-  layer2.transition()
-      .duration(750)
-      .attr("transform", "translate(0,0)scale(1)");
+
+  // Reset's train even if user clicks on makes new path
+  d3.selectAll(".train").remove();
 
   lines.selectAll(".point")
       .data(circles)
-    .enter().append("circle")
+      .enter().append("circle")
       .attr("r", 4)
       .attr("transform", function(d) { return "translate(" + d + ")"; });
 
-  var circle = layer3.append("circle")
+  trainPos = layer3.append("circle")
       .attr("r", 5)
       .attr("transform", "translate(" + circles[0] + ")")
-      .style("fill", "blue")
+      .style("fill", "#666666")
       .attr("class", "train")
-      .style("opacity", .6);
+      .attr("opacity", .8);
 
-  var travelPath = d3.selectAll("path.line");
+  travelPath = d3.selectAll("path.line");
   transition();
+}
 
-  function transition() {
-    circle.transition()
-            .duration(15000)
-            .attrTween("transform", translateAlong(travelPath.node()))
-            .each("end", transition);
-  }
+function transition() {
+  trainPos.transition()
+          .duration(15000)
+          .attrTween("transform", translateAlong(travelPath.node(), 0))
+          .each("end", transition);
+  zoomLayer.transition()
+          .duration(15000)
+          .attrTween("transform", translateAlong(travelPath.node(), 1))
+          .each("end", transition);
+}
 
-  // Returns an attrTween for translating along the specified path element.
-  function translateAlong(path) {
-    var l = path.getTotalLength();
-    return function(d, i, a) {
-      return function(t) {
-        var p = path.getPointAtLength(t * l);
-        // layer2.transition()
-        //     .attr("transform", "translate(" + p.x + "," + p.y + ")scale(4,4)");
+// Returns an attrTween for translating along the specified path element.
+function translateAlong(path, layerSwitch) {
+  var l = path.getTotalLength();
+  return function(d, i, a) {
+    return function(t) {
+      var p = path.getPointAtLength(t * l);
+      if (layerSwitch === 0)
         return "translate(" + p.x + "," + p.y + ")";
-      };
+      else
+        return "translate(" + -p.x + "," + -p.y + ")scale(2)";
     };
-  }
+  };
+}
+
+function zoomed() {
+  zoomLayer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+function dragstarted(d) {
+  d3.event.sourceEvent.stopPropagation();
+  d3.select(this).classed("dragging", true);
+}
+
+function dragged(d) {
+  d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+}
+
+function dragended(d) {
+  d3.select(this).classed("dragging", false);
 }

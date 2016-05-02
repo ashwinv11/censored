@@ -1,5 +1,6 @@
 body {
   background: black;
+  font-family: "Inconsolata";
 }
 
 #chart{
@@ -21,6 +22,7 @@ button {
   color: white;
   text-align: right;
   float: right;
+  opacity: 0;
 }
 
 #state_name{

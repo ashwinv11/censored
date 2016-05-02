@@ -59,6 +59,16 @@ function drawDistricts() {
         .attr("stroke-width", .4)
         .attr("stroke-opacity", 0)
         .on("mouseover", function(d){
+           d3.select('.controls_text').transition()
+                                      .duration(500)
+                                      .style('opacity', 1);
+          document.getElementById("state_name").innerHTML = d.properties.NAME_1;
+          document.getElementById("district_name").innerHTML = d.properties.NAME_2;
+        })
+        .on("mouseout", function(d){
+           d3.select('.controls_text').transition()
+                                      .duration(500)
+                                      .style('opacity', 0);
           document.getElementById("state_name").innerHTML = d.properties.NAME_1;
           document.getElementById("district_name").innerHTML = d.properties.NAME_2;
         })
@@ -204,11 +214,13 @@ function start(){
 function followPath() {
   trainPos.transition()
           .duration(15000)
+          .ease("linear")
           .attrTween("transform", translateAlong(travelPath.node(), 0))
           .each("end", reset);
 
   zoomLayer.transition()
             .duration(15000)
+            .ease("linear")
             .attrTween("transform", translateAlong(travelPath.node(), 1))
             .each("end", reset);
 }
@@ -250,6 +262,7 @@ var textDisplay = infoZone.append('text')
                           .attr("text-align", "left")
                           .attr("x", 0)
                           .attr("y", 100)
+                          .style('opacity', 0)
                           .on("mousedown", function () {
                               textTypewriter();
 });

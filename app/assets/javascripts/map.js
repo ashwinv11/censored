@@ -28,8 +28,8 @@ var map = d3.select("#chart").append("svg:svg")
     //.call(drawRailways)
     .call(drawDistricts)
     .append("g")
-    .attr("id", "zoomLayer")
-    .call(zoom);
+    .attr("id", "zoomLayer");
+    //.call(zoom);
 
 var zoomLayer = d3.select("#zoomLayer");
 
@@ -63,7 +63,7 @@ function drawDistricts() {
         .data(json.features)
         .enter().append("path")
         .attr("d", path)
-        .attr("fill", "red")
+        .attr("fill", "#D13737")
         .attr("opacity", 0)
         .attr("stroke", "black")
         .attr("stroke-width", .4)
@@ -73,6 +73,9 @@ function drawDistricts() {
           document.getElementById("district_name").innerHTML = d.properties.NAME_2;
         })
         .on("click", function(d) {
+
+          console.log(d.properties.NAME_2);
+
           // PATH DRAWING
 
           var lineFunction = d3.svg.line()
@@ -140,7 +143,7 @@ function drawStates() {
         .data(json.features)
         .enter().append("path")
         .attr("d", path)
-        .attr("fill", "red")
+        .attr("fill", "#D13737")
         .attr("opacity", .6)
         .attr("stroke", "black")
         .attr("stroke-width", .4)
@@ -164,11 +167,13 @@ function drawRailways() {
 // RESET BUTTON
 
 function reset() {
+  travelPath.transition();
+  zoomLayer.transition();
   d3.selectAll(".line").remove();
   d3.selectAll(".point").remove();
   d3.selectAll(".train").remove();
   circles = [];
-  travelPath = [];
+  //travelPath = [];
 
   zoomLayer.transition()
       .duration(750)
@@ -189,22 +194,23 @@ function start(){
   trainPos = layer3.append("circle")
       .attr("r", 5)
       .attr("transform", "translate(" + circles[0] + ")")
-      .style("fill", "white")
+      .style("fill", "red")
       .attr("class", "train");
 
   travelPath = d3.selectAll("path.line");
-  transition();
+  followPath();
 }
 
-function transition() {
+function followPath() {
   trainPos.transition()
           .duration(15000)
           .attrTween("transform", translateAlong(travelPath.node(), 0))
-          .each("end", transition);
+          .each("end", reset);
+
   zoomLayer.transition()
-          .duration(15000)
-          .attrTween("transform", translateAlong(travelPath.node(), 1))
-          .each("end", transition);
+            .duration(15000)
+            .attrTween("transform", translateAlong(travelPath.node(), 1))
+            .each("end", reset);
 }
 
 // Returns an attrTween for translating along the specified path element.
@@ -215,8 +221,8 @@ function translateAlong(path, layerSwitch) {
       var p = path.getPointAtLength(t * l);
       if (layerSwitch === 0)
         return "translate(" + p.x + "," + p.y + ")";
-      else
-        return "translate(" + -p.x + "," + -p.y + ")scale(2)";
+      else if (layerSwitch === 1)
+        return "translate(" + -p.x + "," + -p.y + ")scale(2,2)";
     };
   };
 }

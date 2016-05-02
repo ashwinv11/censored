@@ -7,6 +7,12 @@ body {
   float: left;
 }
 
+#controls{
+  width: 400px;
+  height: auto;
+  float: right;
+}
+
 button {
   float: left;
 }

@@ -10,16 +10,6 @@ var linePath;
 var travelPath;
 var trainPos;
 
-var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 10])
-    .on("zoom", zoomed);
-
-var drag = d3.behavior.drag()
-    .origin(function(d) { return d; })
-    .on("dragstart", dragstarted)
-    .on("drag", dragged)
-    .on("dragend", dragended);
-
 var map = d3.select("#chart").append("svg:svg")
     .attr("width", w)
     .attr("height", h)
@@ -74,7 +64,7 @@ function drawDistricts() {
         })
         .on("click", function(d) {
 
-          console.log(d.properties.NAME_2);
+          console.log(d.properties.NAME_2.toUpperCase());
 
           // PATH DRAWING
 
@@ -227,19 +217,46 @@ function translateAlong(path, layerSwitch) {
   };
 }
 
-function zoomed() {
-  zoomLayer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-}
+// TEXT STUFF
 
-function dragstarted(d) {
-  d3.event.sourceEvent.stopPropagation();
-  d3.select(this).classed("dragging", true);
-}
+var i = 0;
+var textData = [
+    'Lorem ipsum dolor sit amet, consectetur adipisicing elit,',
+    'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Ut enim ad minim veniam, quis nostrud exercitation',
+    'ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    'Duis aute irure dolor in reprehenderit',
+    'in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    'Excepteur sint occaecat cupidatat non proident,',
+    'sunt in culpa qui officia deserunt mollit anim id est laborum.'];
 
-function dragged(d) {
-  d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-}
+var infoZone = d3.select("#controls").append("svg:svg")
+    .attr("width", 200)
+    .attr("height", 200);
 
-function dragended(d) {
-  d3.select(this).classed("dragging", false);
-}
+var textDisplay = infoZone.append('text')
+                          .attr("fill", "white")
+                          .attr("font-size", "16px")
+                          .attr("text-align", "left")
+                          .attr("x", 0)
+                          .attr("y", 100)
+                          .call(transitionText)
+                          .on("mousedown", function () {
+                              transitionText();
+});
+
+function transitionText() {
+    d3.select('text').transition()
+        .duration(5000)
+        .ease("linear")
+        .tween("text", function () {
+            var newText = textData[i];
+            var textLength = newText.length;
+            return function (t) {
+                this.textContent = newText.slice(0, 
+                                   Math.round( t * textLength) );
+            };
+        });
+    
+    i = (i + 1) % textData.length;
+};

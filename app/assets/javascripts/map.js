@@ -23,22 +23,29 @@ var drag = d3.behavior.drag()
 var map = d3.select("#chart").append("svg:svg")
     .attr("width", w)
     .attr("height", h)
-        //.call(d3.behavior.zoom().on("zoom", redraw))
     .call(initialize)
-    .call(drawMap)
+    .call(drawStates)
+    //.call(drawRailways)
+    .call(drawDistricts)
     .append("g")
     .attr("id", "zoomLayer")
     .call(zoom);
 
-var india = map.append("svg:g")
-    .attr("id", "india");
+var zoomLayer = d3.select("#zoomLayer");
+
+var states = map.append("svg:g")
+    .attr("id", "states");
+
+var railways = map.append("svg:g")
+    .attr("id", "railways");
+
+var districts = map.append("svg:g")
+    .attr("id", "districts");
 
 function initialize() {
   proj.scale(7200);
   proj.translate([-1280, 780]);
 }
-
-var zoomLayer = d3.select("#zoomLayer");
 
 var layer2 = map.append('g')
             .attr("id", "lines");
@@ -50,22 +57,21 @@ var layer3 = map.append('g')
   
 var train = layer3.append("svg");
 
-function drawMap() {    
+function drawDistricts() {
   d3.json('/india_district.geojson', function (json) {
-    india.selectAll("path")
+    districts.selectAll("path")
         .data(json.features)
         .enter().append("path")
         .attr("d", path)
         .attr("fill", "red")
-        .attr("opacity", .6)
+        .attr("opacity", 0)
         .attr("stroke", "black")
         .attr("stroke-width", .4)
-        .attr("stroke-opacity", .4)
+        .attr("stroke-opacity", 0)
         .on("mouseover", function(d){
           document.getElementById("state_name").innerHTML = d.properties.NAME_1;
           document.getElementById("district_name").innerHTML = d.properties.NAME_2;
         })
-
         .on("click", function(d) {
           // PATH DRAWING
 
@@ -100,7 +106,8 @@ function drawMap() {
                     .attr("r",2)
                     .attr("class", "line")
                     .attr("class", "point")
-                    .style("fill", "white");
+                    .style("fill", "white")
+                    .attr("opacity", ".8");
 
           // ZOOMING VIA TRANSLATE
 
@@ -127,14 +134,41 @@ function drawMap() {
   });
 };
 
+function drawStates() {
+  d3.json('/states.json', function (json) {
+    states.selectAll("path")
+        .data(json.features)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("fill", "red")
+        .attr("opacity", .6)
+        .attr("stroke", "black")
+        .attr("stroke-width", .4)
+        .attr("stroke-opacity", .6);
+  });
+};
+
+function drawRailways() {
+  d3.json('/railways.geojson', function (json) {
+    railways.selectAll("path")
+        .data(json.features)
+        .enter().append("path")
+        .attr("d", path)
+        //.attr("opacity", .6)
+        .attr("stroke", "black")
+        .attr("stroke-width", .6)
+        .attr("stroke-opacity", 1);
+  });
+};
+
 // RESET BUTTON
 
 function reset() {
-  travelPath = null;
   d3.selectAll(".line").remove();
   d3.selectAll(".point").remove();
   d3.selectAll(".train").remove();
   circles = [];
+  travelPath = [];
 
   zoomLayer.transition()
       .duration(750)
@@ -155,9 +189,8 @@ function start(){
   trainPos = layer3.append("circle")
       .attr("r", 5)
       .attr("transform", "translate(" + circles[0] + ")")
-      .style("fill", "#666666")
-      .attr("class", "train")
-      .attr("opacity", .8);
+      .style("fill", "white")
+      .attr("class", "train");
 
   travelPath = d3.selectAll("path.line");
   transition();

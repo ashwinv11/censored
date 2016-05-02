@@ -5,6 +5,7 @@ var path = d3.geo.path().projection(proj);
 var t = proj.translate(); // the projection's default translation
 var s = proj.scale() // the projection's default scale
 var circles = [];
+var stations = [];
 var centered;
 var linePath;
 var travelPath;
@@ -18,8 +19,7 @@ var map = d3.select("#chart").append("svg:svg")
     //.call(drawRailways)
     .call(drawDistricts)
     .append("g")
-    .attr("id", "zoomLayer");
-    //.call(zoom);
+    .attr("id", "zoomLayer");;
 
 var zoomLayer = d3.select("#zoomLayer");
 
@@ -64,7 +64,8 @@ function drawDistricts() {
         })
         .on("click", function(d) {
 
-          console.log(d.properties.NAME_2.toUpperCase());
+          var groupData = {state: d.properties.NAME_1.toUpperCase(), 
+                          district: d.properties.NAME_2.toUpperCase()}
 
           // PATH DRAWING
 
@@ -94,6 +95,7 @@ function drawDistricts() {
                     .data(circles)
                     .enter()
                     .append("circle")
+                    .datum(groupData)
                     .attr("cx",function(d,i){return circles[i][0];})
                     .attr("cy",function(d,i){return circles[i][1];})
                     .attr("r",2)
@@ -135,7 +137,7 @@ function drawStates() {
         .attr("d", path)
         .attr("fill", "#D13737")
         .attr("opacity", .6)
-        .attr("stroke", "black")
+        .attr("stroke", "#e2706e")
         .attr("stroke-width", .4)
         .attr("stroke-opacity", .6);
   });
@@ -162,6 +164,10 @@ function reset() {
   d3.selectAll(".line").remove();
   d3.selectAll(".point").remove();
   d3.selectAll(".train").remove();
+  textDisplay.transition()
+            .duration(500)
+            .style('opacity', 0);
+  //textDisplay.remove();
   circles = [];
   //travelPath = [];
 
@@ -171,6 +177,10 @@ function reset() {
 }
 
 function start(){
+  
+  textTypewriter();
+  console.log(d3.selectAll('.point').datum());
+  console.log(circles);
 
   // Reset's train even if user clicks on makes new path
   d3.selectAll(".train").remove();
@@ -221,14 +231,14 @@ function translateAlong(path, layerSwitch) {
 
 var i = 0;
 var textData = [
-    'Lorem ipsum dolor sit amet, consectetur adipisicing elit,',
-    'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud exercitation',
-    'ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    'Duis aute irure dolor in reprehenderit',
-    'in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    'Excepteur sint occaecat cupidatat non proident,',
-    'sunt in culpa qui officia deserunt mollit anim id est laborum.'];
+    'Rapes occured: 32',
+    'Rapes occured: 12',
+    'Rapes occured: 15',
+    'Rapes occured: 88',
+    'Rapes occured: 13',
+    'Rapes occured: 11',
+    'Rapes occured: 2',
+    'Rapes occured: 9'];
 
 var infoZone = d3.select("#controls").append("svg:svg")
     .attr("width", 200)
@@ -240,14 +250,15 @@ var textDisplay = infoZone.append('text')
                           .attr("text-align", "left")
                           .attr("x", 0)
                           .attr("y", 100)
-                          .call(transitionText)
                           .on("mousedown", function () {
-                              transitionText();
+                              textTypewriter();
 });
 
-function transitionText() {
+function textTypewriter() {
     d3.select('text').transition()
-        .duration(5000)
+        .duration(500)
+        .style('opacity', 1)
+        .duration(3000)
         .ease("linear")
         .tween("text", function () {
             var newText = textData[i];

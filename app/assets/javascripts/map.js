@@ -212,14 +212,17 @@ function start(){
 }
 
 function followPath() {
+  
+  var durationScale = travelPath.node().getTotalLength();
+
   trainPos.transition()
-          .duration(15000)
+          .duration(100 * durationScale)
           .ease("linear")
           .attrTween("transform", translateAlong(travelPath.node(), 0))
           .each("end", reset);
 
   zoomLayer.transition()
-            .duration(15000)
+            .duration(100 * durationScale)
             .ease("linear")
             .attrTween("transform", translateAlong(travelPath.node(), 1))
             .each("end", reset);

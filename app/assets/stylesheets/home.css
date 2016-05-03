@@ -32,3 +32,7 @@ button {
 #district_name{
   display: inline-block;
 }
+
+button{
+  display: block;
+}

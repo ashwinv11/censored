@@ -10,6 +10,7 @@ var centered;
 var linePath;
 var travelPath;
 var trainPos;
+var railwaysDisplayed = false;
 
 var map = d3.select("#chart").append("svg:svg")
     .attr("width", w)
@@ -154,16 +155,29 @@ function drawStates() {
 };
 
 function drawRailways() {
-  d3.json('/railways.geojson', function (json) {
+  if(railwaysDisplayed === false){
+    d3.json('/railways.geojson', function (json) {
+      railways.selectAll("path")
+          .data(json.features)
+          .enter().append("path")
+          .attr("d", path)
+          .transition()
+          .duration(1000)
+          .attr("opacity", 1)
+          .attr("stroke", "black")
+          .attr("stroke-width", .6)
+          .attr("stroke-opacity", 1);
+    });
+    railwaysDisplayed = true;
+  }
+  else{
     railways.selectAll("path")
-        .data(json.features)
-        .enter().append("path")
-        .attr("d", path)
-        //.attr("opacity", .6)
-        .attr("stroke", "black")
-        .attr("stroke-width", .6)
-        .attr("stroke-opacity", 1);
-  });
+            .transition()
+            .duration(1000)
+            .attr("opacity", 0)
+            .attr("stroke-opacity", 0);
+    railwaysDisplayed = false;
+  }
 };
 
 // RESET BUTTON
@@ -212,7 +226,7 @@ function start(){
 }
 
 function followPath() {
-  
+
   var durationScale = travelPath.node().getTotalLength();
 
   trainPos.transition()
@@ -246,14 +260,14 @@ function translateAlong(path, layerSwitch) {
 
 var i = 0;
 var textData = [
-    'Rapes occured: 32',
-    'Rapes occured: 12',
-    'Rapes occured: 15',
-    'Rapes occured: 88',
-    'Rapes occured: 13',
-    'Rapes occured: 11',
-    'Rapes occured: 2',
-    'Rapes occured: 9'];
+    'Rapes occured: a32',
+    'Rapes occured: b12',
+    'Rapes occured: c15',
+    'Rapes occured: d88',
+    'Rapes occured: e13',
+    'Rapes occured: f11',
+    'Rapes occured: g2',
+    'Rapes occured: h9'];
 
 var infoZone = d3.select("#controls").append("svg:svg")
     .attr("width", 200)
@@ -287,3 +301,7 @@ function textTypewriter() {
     
     i = (i + 1) % textData.length;
 };
+
+function toggleRailways(){
+  drawRailways();
+}

@@ -4,8 +4,10 @@
     <div>State: <div id="state_name"></div></div>
     <div>District: <div id="district_name"></div></div>
   </span>
-  <button id="start" onclick="start()">Travel</button>
+  <button id="start" onclick="startRoute()">Travel</button>
   <button id="reset" onclick="reset()">New Route</button>
   <!-- <button id="toggle_railways" onclick="toggleRailways()">Toggle Railways</button> -->
 </div>
+<%= content_tag :div, class: "data_class", data: {districts: @districts} do %>
+<% end %>
 <%= javascript_include_tag "map" %>

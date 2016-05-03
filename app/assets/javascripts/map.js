@@ -11,6 +11,21 @@ var linePath;
 var travelPath;
 var trainPos;
 var railwaysDisplayed = false;
+var soundOn = false;
+var currentState;
+var currentDistrict;
+
+initAudioEngine();
+
+function initAudioEngine() {
+  if (typeof AudioContext !== "undefined") {
+      context = new AudioContext();
+  } else if (typeof webkitAudioContext !== "undefined") {
+      context = new webkitAudioContext();
+  } else {
+      throw new Error('AudioContext not supported. :(');
+  }
+}
 
 var map = d3.select("#chart").append("svg:svg")
     .attr("width", w)
@@ -20,7 +35,7 @@ var map = d3.select("#chart").append("svg:svg")
     //.call(drawRailways)
     .call(drawDistricts)
     .append("g")
-    .attr("id", "zoomLayer");;
+    .attr("id", "zoomLayer");
 
 var zoomLayer = d3.select("#zoomLayer");
 
@@ -75,8 +90,11 @@ function drawDistricts() {
         })
         .on("click", function(d) {
 
-          var groupData = {state: d.properties.NAME_1.toUpperCase(), 
-                          district: d.properties.NAME_2.toUpperCase()}
+          currentState = d.properties.NAME_1.toUpperCase();
+          currentDistrict = d.properties.NAME_2.toUpperCase();
+
+          var groupData = {state: currentState, 
+                          district: currentDistrict}
 
           // PATH DRAWING
 
@@ -183,6 +201,7 @@ function drawRailways() {
 // RESET BUTTON
 
 function reset() {
+  currentState, currentState = null;
   travelPath.transition();
   zoomLayer.transition();
   d3.selectAll(".line").remove();
@@ -200,11 +219,19 @@ function reset() {
       .attr("transform", "translate(0,0)scale(1)");
 }
 
-function start(){
+function startRoute(){
   
+  sendVars();
   textTypewriter();
-  console.log(d3.selectAll('.point').datum());
-  console.log(circles);
+
+  // first time playing sound
+  if(soundOn === false){
+    playSound(soundSource);
+    soundOn = true;
+  }
+
+  //console.log(d3.selectAll('.point').datum());
+  //console.log(circles);
 
   // Reset's train even if user clicks on makes new path
   d3.selectAll(".train").remove();
@@ -304,4 +331,85 @@ function textTypewriter() {
 
 function toggleRailways(){
   drawRailways();
+}
+
+function sendVars(){
+  console.log(currentState, currentDistrict);
+  window.open("localhost:3000//controller/index?state="+currentState+"&district="+currentDistrict,"_self");
+}
+
+// SOUND STUFF
+
+var context; 
+var soundSource; 
+var soundBuffer;
+var url = '/sound_master.m4a';
+
+startSound();
+
+function startSound() {
+  // loads asynchronously
+  var request = new XMLHttpRequest();
+  request.open("GET", url, true);
+  request.responseType = "arraybuffer";
+
+  // Our asynchronous callback
+  request.onload = function() {
+      var audioData = request.response;
+      audioGraph(audioData);
+  };
+
+  request.send();
+}
+
+function playSound() {
+  // play the source now
+  soundSource.start(context.currentTime);
+}
+
+function stopSound() {
+  // stop the source now
+  soundSource.stop(context.currentTime);
+}
+
+// This is the code we are interested in
+function audioGraph(audioData) {
+
+  // create a sound source
+  soundSource = context.createBufferSource();
+  soundSource.loop = true;
+
+  // The Audio Context handles creating source buffers from raw binary
+  context.decodeAudioData(audioData, function(soundBuffer){
+      // Add the buffered data to our object
+      soundSource.buffer = soundBuffer;
+
+      volumeNode = context.createGain();
+
+      //Set the volume
+      volumeNode.gain.value = 0.5;
+
+      // Wiring
+      soundSource.connect(volumeNode);
+      volumeNode.connect(context.destination);
+      
+      filterNode = context.createBiquadFilter();
+
+      // Specify this is a lowpass filter
+      filterNode.type = "lowpass";
+
+      // Quieten sounds over 220Hz
+      filterNode.frequency.value = 500;
+      filterNode.frequency.gain = 25;
+
+      soundSource.connect(volumeNode);
+      volumeNode.connect(filterNode);
+      filterNode.connect(context.destination);   
+  });
+}
+
+function filterSweep(){
+  filterNode.frequency.value.exponentialRampToValueAtTime(20, context.currentTime + 5);
+  filterNode.frequency.gain = 25;
+  //console.log(filterNode.frequency.value);
 }

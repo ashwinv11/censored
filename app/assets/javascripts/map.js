@@ -12,19 +12,18 @@ var travelPath;
 var trainPos;
 var railwaysDisplayed = false;
 var soundOn = false;
+var durationScale;
 var currentState;
 var currentDistrict;
+var filterUpTimeOut, filterDownTimeOut;
 
-initAudioEngine();
+var soundFile;
 
-function initAudioEngine() {
-  if (typeof AudioContext !== "undefined") {
-      context = new AudioContext();
-  } else if (typeof webkitAudioContext !== "undefined") {
-      context = new webkitAudioContext();
-  } else {
-      throw new Error('AudioContext not supported. :(');
-  }
+var filter, filterFreq, filterRes;
+
+function preload() {
+  soundFormats('mp3');
+  soundFile = loadSound('/sound_master.mp3');
 }
 
 var map = d3.select("#chart").append("svg:svg")
@@ -201,7 +200,12 @@ function drawRailways() {
 // RESET BUTTON
 
 function reset() {
-  currentState, currentState = null;
+  if(soundOn){
+    filterDownTimeOut = setInterval(filterDown, 10);
+    soundOn = false;
+  }
+  //filterFreq = 0;
+  currentState, durationScale, currentState = null;
   travelPath.transition();
   zoomLayer.transition();
   d3.selectAll(".line").remove();
@@ -220,15 +224,10 @@ function reset() {
 }
 
 function startRoute(){
-  
+  soundOn = true;
+  filterUpTimeOut = setInterval(filterUp, 10);
   sendVars();
   textTypewriter();
-
-  // first time playing sound
-  if(soundOn === false){
-    playSound(soundSource);
-    soundOn = true;
-  }
 
   //console.log(d3.selectAll('.point').datum());
   //console.log(circles);
@@ -252,9 +251,11 @@ function startRoute(){
   followPath();
 }
 
+
+
 function followPath() {
 
-  var durationScale = travelPath.node().getTotalLength();
+  durationScale = travelPath.node().getTotalLength();
 
   trainPos.transition()
           .duration(100 * durationScale)
@@ -339,78 +340,41 @@ function sendVars(){
   //window.open("localhost:3000//controller/index?state="+currentState+"&district="+currentDistrict,"_self");
 }
 
-// SOUND STUFF
+function setup() {
+  // loop the sound file
+  soundFile.loop();
+  filter = new p5.LowPass();
 
-var context; 
-var soundSource; 
-var soundBuffer;
-var url = '/sound_master.m4a';
+  // Disconnect soundfile from master output.
+  // Then, connect it to the filter, so that we only hear the filtered sound
+  soundFile.disconnect();
+  soundFile.connect(filter);
 
-startSound();
+  // Map mouseX to a the cutoff frequency from the lowest
+  // frequency (10Hz) to the highest (22050Hz) that humans can hear
+  filterFreq = 250;
 
-function startSound() {
-  // loads asynchronously
-  var request = new XMLHttpRequest();
-  request.open("GET", url, true);
-  request.responseType = "arraybuffer";
+  // Map mouseY to resonance (volume boost) at the cutoff frequency
+  filterRes = 1;
 
-  // Our asynchronous callback
-  request.onload = function() {
-      var audioData = request.response;
-      audioGraph(audioData);
-  };
-
-  request.send();
+  // set filter parameters
+  filter.set(filterFreq, filterRes);
 }
 
-function playSound() {
-  // play the source now
-  soundSource.start(context.currentTime);
+function filterUp(){
+  if(filterFreq < 20000){
+    filterFreq *= 1.1;
+    filter.set(filterFreq, filterRes); 
+  }else{
+    clearTimeout(filterUpTimeOut);
+  }
 }
 
-function stopSound() {
-  // stop the source now
-  soundSource.stop(context.currentTime);
-}
-
-// This is the code we are interested in
-function audioGraph(audioData) {
-
-  // create a sound source
-  soundSource = context.createBufferSource();
-  soundSource.loop = true;
-
-  // The Audio Context handles creating source buffers from raw binary
-  context.decodeAudioData(audioData, function(soundBuffer){
-      // Add the buffered data to our object
-      soundSource.buffer = soundBuffer;
-
-      volumeNode = context.createGain();
-
-      //Set the volume
-      volumeNode.gain.value = 0.5;
-
-      // Wiring
-      soundSource.connect(volumeNode);
-      volumeNode.connect(context.destination);
-      
-      filterNode = context.createBiquadFilter();
-
-      // Specify this is a lowpass filter
-      filterNode.type = "lowpass";
-
-      // Quieten sounds over 220Hz
-      filterNode.frequency.value = 500;
-      filterNode.frequency.gain = 25;
-
-      soundSource.connect(volumeNode);
-      volumeNode.connect(filterNode);
-      filterNode.connect(context.destination);   
-  });
-}
-
-function filterSweep(){
-  filterNode.frequency.value.exponentialRampToValueAtTime(20, context.currentTime + 5);
-  filterNode.frequency.gain = 25;
-  //console.log(filterNode.frequency.value);
+function filterDown(){
+  if (filterFreq > 249){
+    filterFreq *= 0.9;
+    filter.set(filterFreq, filterRes);
+  }else{
+    clearTimeout(filterDownTimeOut);
+  }
 }

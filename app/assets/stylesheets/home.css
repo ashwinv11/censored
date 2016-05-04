@@ -33,6 +33,10 @@ button {
   display: inline-block;
 }
 
+#p5_loading{
+  display: none;
+}
+
 button{
   display: block;
 }

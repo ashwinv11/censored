@@ -89,7 +89,7 @@ function drawDistricts() {
           document.getElementById("district_name").innerHTML = d.properties.NAME_2;
         })
         .on("click", function(d) {
-
+          console.log(d);
           currentState = d.properties.NAME_1.toUpperCase();
           currentDistrict = d.properties.NAME_2.toUpperCase();
 
@@ -381,7 +381,7 @@ $('#reset').on('click', function(event, data, status, xhr) {
   return $.ajax({
     url: '/districts',
     type: 'GET',
-    dataType: "json",
+    dataType: 'json',
     data: {
       state: $('#state_name').text().toUpperCase(),
       district: $('#district_name').text().toUpperCase()
@@ -390,7 +390,7 @@ $('#reset').on('click', function(event, data, status, xhr) {
       console.log("request sent");
     },
     success: function(data, event, status, xhr) {
-      console.log(data);
+      console.log(data[0].Rape);
     },
     error: function(event, data, status, xhr) {
       alert("Ajax error!")

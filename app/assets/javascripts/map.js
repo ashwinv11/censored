@@ -16,6 +16,9 @@ var durationScale;
 var currentState;
 var currentDistrict;
 var districts = [];
+var rapeData = [];
+var i = 0;
+var textData = [];
 var filterUpTimeOut, filterDownTimeOut;
 
 var soundFile;
@@ -74,6 +77,7 @@ function drawDistricts() {
         .attr("stroke", "black")
         .attr("stroke-width", .4)
         .attr("stroke-opacity", 0)
+
         .on("mouseover", function(d){
            d3.select('.controls_text').transition()
                                       .duration(500)
@@ -81,6 +85,7 @@ function drawDistricts() {
           document.getElementById("state_name").innerHTML = d.properties.NAME_1;
           document.getElementById("district_name").innerHTML = d.properties.NAME_2;
         })
+
         .on("mouseout", function(d){
            d3.select('.controls_text').transition()
                                       .duration(500)
@@ -88,13 +93,15 @@ function drawDistricts() {
           document.getElementById("state_name").innerHTML = d.properties.NAME_1;
           document.getElementById("district_name").innerHTML = d.properties.NAME_2;
         })
+
         .on("click", function(d) {
-          console.log(d);
           currentState = d.properties.NAME_1.toUpperCase();
           currentDistrict = d.properties.NAME_2.toUpperCase();
 
           var groupData = {state: currentState, 
                           district: currentDistrict}
+
+          districts.push(groupData);
 
           // PATH DRAWING
 
@@ -201,21 +208,29 @@ function drawRailways() {
 // RESET BUTTON
 
 function reset() {
+
   if(soundOn){
     filterDownTimeOut = setInterval(filterDown, 10);
     soundOn = false;
   }
   currentState, currentDistrict, durationScale  = null;
-  travelPath.transition();
+
+  // Catches first time no route click
+  try{
+    travelPath.transition();
+  } catch(e){}
+  
   zoomLayer.transition();
   d3.selectAll(".line").remove();
   d3.selectAll(".point").remove();
   d3.selectAll(".train").remove();
   textDisplay.transition()
-            .duration(500)
+            .duration(3000)
             .style('opacity', 0);
   //textDisplay.remove();
   circles = [];
+  districts = [];
+  rapeData = [];
   //travelPath = [];
 
   zoomLayer.transition()
@@ -224,13 +239,12 @@ function reset() {
 }
 
 function startRoute(){
+
   soundOn = true;
   filterUpTimeOut = setInterval(filterUp, 10);
-  sendVars();
-  textTypewriter();
 
   //console.log(d3.selectAll('.point').datum());
-  //console.log(circles);
+  console.log(textData);
 
   // Reset's train even if user clicks on makes new path
   d3.selectAll(".train").remove();
@@ -246,6 +260,8 @@ function startRoute(){
       .attr("transform", "translate(" + circles[0] + ")")
       .style("fill", "red")
       .attr("class", "train");
+
+  checkIntersect();
 
   travelPath = d3.selectAll("path.line");
   followPath();
@@ -271,11 +287,24 @@ function followPath() {
 // Returns an attrTween for translating along the specified path element.
 function translateAlong(path, layerSwitch) {
   var l = path.getTotalLength();
+  var whichCircle = 0;
   return function(d, i, a) {
     return function(t) {
       var p = path.getPointAtLength(t * l);
-      if (layerSwitch === 0)
+      if (layerSwitch === 0){
+        try {
+          if((p.x >= (circles[whichCircle][0] - 2) && p.x <= (circles[whichCircle][0] + 2)) && ((p.y >= (circles[whichCircle][1] - 2) && p.y <= (circles[whichCircle][1] + 2)))){
+            //console.log("INSIDE", "x" + p.x, "x-circle" + (circles[1][0]), "y" + p.y, "y-circle" + (circles[1][1]));
+            whichCircle ++;
+            textTypewriter();
+          } else{
+            //console.log("OUTSIDE", "x" + p.x, "x-circle" + (circles[1][0]), "y" + p.y, "y-circle" + (circles[1][1]));
+          }
+        } catch(e){
+          console.log("shit's undefined no 2");
+        }
         return "translate(" + p.x + "," + p.y + ")";
+      }
       else if (layerSwitch === 1)
         return "translate(" + -p.x + "," + -p.y + ")scale(2,2)";
     };
@@ -283,17 +312,6 @@ function translateAlong(path, layerSwitch) {
 }
 
 // TEXT STUFF
-
-var i = 0;
-var textData = [
-    'Rapes occured: a32',
-    'Rapes occured: b12',
-    'Rapes occured: c15',
-    'Rapes occured: d88',
-    'Rapes occured: e13',
-    'Rapes occured: f11',
-    'Rapes occured: g2',
-    'Rapes occured: h9'];
 
 var infoZone = d3.select("#controls").append("svg:svg")
     .attr("width", 200)
@@ -306,35 +324,40 @@ var textDisplay = infoZone.append('text')
                           .attr("x", 0)
                           .attr("y", 100)
                           .style('opacity', 0)
-                          .on("mousedown", function () {
-                              textTypewriter();
-});
+                          .on("mousedown", checkIntersect);
+
+function checkIntersect(){
+  console.log("trainPos", trainPos);
+  if(trainPos == circles[1][0]){
+    console.log("booop");
+  }
+}
 
 function textTypewriter() {
     d3.select('text').transition()
-        .duration(500)
+        .duration(300)
         .style('opacity', 1)
-        .duration(3000)
+        .duration(1000)
         .ease("linear")
         .tween("text", function () {
-            var newText = textData[i];
-            var textLength = newText.length;
-            return function (t) {
-                this.textContent = newText.slice(0, 
-                                   Math.round( t * textLength) );
-            };
+            var newText = textData[i-1];
+            try{
+              var textLength = newText.length;
+              return function (t) {
+                  this.textContent = newText.slice(0, 
+                                     Math.round( t * textLength) );
+              };
+            } catch(e){}
         });
-    
-    i = (i + 1) % textData.length;
+
+      if (i > textData.length)
+        i = 0;
+      else
+        i++;
 };
 
 function toggleRailways(){
   drawRailways();
-}
-
-function sendVars(){
-  console.log(currentState, currentDistrict);
-  window.open("localhost:3000/districts?state="+currentState+"&district="+currentDistrict,"_self");
 }
 
 function setup() {
@@ -376,21 +399,24 @@ function filterDown(){
   }
 }
 
-$('#reset').on('click', function(event, data, status, xhr) {
+// Calling the DB!
+
+$('#districts').on('click', function (event, data, status, xhr) {
   event.preventDefault();
   return $.ajax({
     url: '/districts',
     type: 'GET',
     dataType: 'json',
     data: {
-      state: $('#state_name').text().toUpperCase(),
-      district: $('#district_name').text().toUpperCase()
-    },
-    complete: function(){
-      console.log("request sent");
+      state: currentState,
+      district: currentDistrict
     },
     success: function(data, event, status, xhr) {
-      console.log(data[0].Rape);
+      try {
+        rapeData.push(data[0].Rape);
+        textData.push("Rapes occurred in 2013: " + data[0].Rape);
+        console.log(data[0].Rape);
+      } catch(e){}
     },
     error: function(event, data, status, xhr) {
       alert("Ajax error!")

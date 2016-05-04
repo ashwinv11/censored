@@ -15,6 +15,7 @@ var soundOn = false;
 var durationScale;
 var currentState;
 var currentDistrict;
+var districts = [];
 var filterUpTimeOut, filterDownTimeOut;
 
 var soundFile;
@@ -204,8 +205,7 @@ function reset() {
     filterDownTimeOut = setInterval(filterDown, 10);
     soundOn = false;
   }
-  //filterFreq = 0;
-  currentState, durationScale, currentState = null;
+  currentState, currentDistrict, durationScale  = null;
   travelPath.transition();
   zoomLayer.transition();
   d3.selectAll(".line").remove();
@@ -251,8 +251,6 @@ function startRoute(){
   followPath();
 }
 
-
-
 function followPath() {
 
   durationScale = travelPath.node().getTotalLength();
@@ -264,10 +262,10 @@ function followPath() {
           .each("end", reset);
 
   zoomLayer.transition()
-            .duration(100 * durationScale)
-            .ease("linear")
-            .attrTween("transform", translateAlong(travelPath.node(), 1))
-            .each("end", reset);
+          .duration(100 * durationScale)
+          .ease("linear")
+          .attrTween("transform", translateAlong(travelPath.node(), 1))
+          .each("end", reset);
 }
 
 // Returns an attrTween for translating along the specified path element.
@@ -336,8 +334,7 @@ function toggleRailways(){
 
 function sendVars(){
   console.log(currentState, currentDistrict);
-  //alert(gon.districts)
-  //window.open("localhost:3000//controller/index?state="+currentState+"&district="+currentDistrict,"_self");
+  window.open("localhost:3000/districts?state="+currentState+"&district="+currentDistrict,"_self");
 }
 
 function setup() {
@@ -378,3 +375,25 @@ function filterDown(){
     clearTimeout(filterDownTimeOut);
   }
 }
+
+$('#reset').on('click', function(event, data, status, xhr) {
+  event.preventDefault();
+  return $.ajax({
+    url: '/districts',
+    type: 'GET',
+    dataType: "json",
+    data: {
+      state: $('#state_name').text().toUpperCase(),
+      district: $('#district_name').text().toUpperCase()
+    },
+    complete: function(){
+      console.log("request sent");
+    },
+    success: function(data, event, status, xhr) {
+      console.log(data);
+    },
+    error: function(event, data, status, xhr) {
+      alert("Ajax error!")
+    }
+  });
+});

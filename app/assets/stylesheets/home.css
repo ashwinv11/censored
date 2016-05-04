@@ -1,0 +1,42 @@
+body {
+  background: black;
+  font-family: "Inconsolata";
+}
+
+#chart{
+  background: black;
+  float: left;
+}
+
+#controls{
+  width: 400px;
+  height: auto;
+  float: right;
+}
+
+button {
+  float: left;
+}
+
+.controls_text{
+  color: white;
+  text-align: right;
+  float: right;
+  opacity: 0;
+}
+
+#state_name{
+  display: inline-block;
+}
+
+#district_name{
+  display: inline-block;
+}
+
+#p5_loading{
+  display: none;
+}
+
+button{
+  display: block;
+}

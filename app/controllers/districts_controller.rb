@@ -1,12 +1,20 @@
 class DistrictsController < ApplicationController
   def index
+    # byebug
+    @client = Mongo::Client.new(['127.0.0.1:27017'], :database => 'censored_development')
+
     @districts = []
-    client = Mongo::Client.new(['127.0.0.1:27017'], :database => 'censored_development')
-  
-    cursor = client[:district].find(:DISTRICT => 'PUDUCHERRY').each do |document|
-      @districts.push(document)
-    end
+    state = params[:state]
+    district = params[:district]
     
-    render :json => @districts
+    cursor = @client[:district].find(:DISTRICT => district).each do |document|
+      @districts.push(document)
+      puts document
+    end
+
+    if request.xhr?
+      render :json => @districts
+    end
   end
 end
+

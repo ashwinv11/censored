@@ -1,0 +1,33 @@
+for your districts:
+shapefiles -> geojson
+
+centroids = [(district_id,(x,y))]
+for each dictrict_id in district:
+  find centroid
+  centroids[district_id] = (x,y)
+
+lat, lon
+min_dist = 100km
+district_to_check = []
+for each district_id in centroids:
+  if dist(centroids[district_id], (lat,lon)) < min_dist:
+    district_to_check.append(district_id)
+
+for each district_id in district_to_check:
+  is lat,lon in shapes[district_id]?
+    done
+
+
+For mouse outside map:
+  check if mouse pos is inside the map, 
+    if not don't let click
+    else
+      
+
+
+TODO:
+  1. Sound
+  2. Connect Data to districts
+  3. Follow train
+  4. Mouse scroll zoom
+  5. d3 graphs page?

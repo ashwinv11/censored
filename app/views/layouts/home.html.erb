@@ -5,24 +5,17 @@
     <title>India Map</title>
 
     <!--  Scripts  -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.0/p5.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.0/addons/p5.sound.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
     <%= javascript_include_tag "d3.min" %>
     <%= javascript_include_tag "d3.geo.min" %>
     <%= csrf_meta_tags %>
 
     <!--  Styles  -->  
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
     <%= stylesheet_link_tag "zcolorbrewer" %>
-    <style type="text/css">
-    svg {
-      background: #eee;
-      }
-      
-    #india {
-      fill: #008000;
-      opacity: .8;
-      stroke: #000000;
-      stroke-width: .7;
-      }
-    </style>
+    <%= stylesheet_link_tag "home" %>
 </head>
 <body>
 

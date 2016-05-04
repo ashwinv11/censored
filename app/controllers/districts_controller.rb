@@ -1,7 +1,8 @@
 class DistrictsController < ApplicationController
   def index
-    state = params[:state]
-    district = params[:district]
+    gon.state = state
+    gon.district = district
+
     @districts = []
     client = Mongo::Client.new(['127.0.0.1:27017'], :database => 'censored_development')
   
@@ -9,6 +10,7 @@ class DistrictsController < ApplicationController
       @districts.push(document)
     end
     
+    gon.districts = @districts
     # render :json => @districts
   end
 end

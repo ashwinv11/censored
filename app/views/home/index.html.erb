@@ -8,6 +8,7 @@
   <button id="reset" onclick="reset()">New Route</button>
   <!-- <button id="toggle_railways" onclick="toggleRailways()">Toggle Railways</button> -->
 </div>
-<%= content_tag :div, class: "data_class", data: {districts: @districts} do %>
-<% end %>
+<div id="data">
+  <%= @districts %>
+</div>
 <%= javascript_include_tag "map" %>

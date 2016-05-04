@@ -335,7 +335,8 @@ function toggleRailways(){
 
 function sendVars(){
   console.log(currentState, currentDistrict);
-  window.open("localhost:3000//controller/index?state="+currentState+"&district="+currentDistrict,"_self");
+  //alert(gon.districts)
+  //window.open("localhost:3000//controller/index?state="+currentState+"&district="+currentDistrict,"_self");
 }
 
 // SOUND STUFF

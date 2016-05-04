@@ -7,6 +7,9 @@
     <!--  Scripts  -->
     <%= javascript_include_tag "d3.min" %>
     <%= javascript_include_tag "d3.geo.min" %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.0/addons/p5.sound.min.js"> 
+    </script>
+    <%= include_gon(init: true, watch: true) %>
     <%= csrf_meta_tags %>
 
     <!--  Styles  -->  
